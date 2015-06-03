@@ -1,5 +1,5 @@
 // https://github.com/guillermoroblesjr/Dbug.js
-(function(window){
+(function(window, undefined){
     'use strict';
     var Dbug = function(){
         this.names = {};
@@ -48,4 +48,4 @@
     };
     window.Dbug = Dbug;
     return Dbug;
-})(window || {}, undefined);
+})(window || {});
