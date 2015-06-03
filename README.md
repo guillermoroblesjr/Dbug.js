@@ -11,3 +11,5 @@ dbug.time('turtles');
 for( var i = 0; i < 2000; i++){}
 dbug.time('turtles');
 ```
+
+![Screenshot](https://raw.githubusercontent.com/guillermoroblesjr/Dbug.js/master/screenshot.PNG)
