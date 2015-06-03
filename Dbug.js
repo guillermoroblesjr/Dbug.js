@@ -1,4 +1,4 @@
-// https://github.com/guillermoroblesjr/Dbug
+// https://github.com/guillermoroblesjr/Dbug.js
 (function(window){
     'use strict';
     var Dbug = function(){
