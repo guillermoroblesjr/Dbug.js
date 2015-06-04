@@ -21,7 +21,6 @@
             this.names[name].options.style = this.names[name].options.style || "background-color: rgb(22, 147, 236); color: #fff; text-shadow: 1px 1px 3px #000; padding: 2px;";
             // create a new start time
             this.names[name].start = new Date();
-            // debugger;
             return;
         };
 
