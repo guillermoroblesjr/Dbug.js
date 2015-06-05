@@ -18,7 +18,8 @@
                 occurrence: []
             };
             this.names[name].options = options;
-            this.names[name].options.style = this.names[name].options.style || "background-color: rgb(22, 147, 236); color: #fff; text-shadow: 1px 1px 3px #000; padding: 2px;";
+            this.names[name].options.style = this.names[name].options.style || '';
+            // "background-color: rgb(22, 147, 236); color: #fff; text-shadow: 1px 1px 3px #000; padding: 2px;"
             // create a new start time
             this.names[name].start = new Date();
             return;
@@ -30,7 +31,8 @@
         this.names[name].occurrence.push(timeDiff);
 
         // if no options are used using the options
-        if ( Object.keys(this.names[name].options).length < 1 ) {
+        if ( this.names[name].options.style === undefined
+             || this.names[name].options.style.length < 6 ) {
             // display the time difference
             console.log( print, timeDiff, 'ms' );
             return;
