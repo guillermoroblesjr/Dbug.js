@@ -4,6 +4,20 @@
     var Dbug = function(){
         this.names = {};
     };
+    // http://www.jacklmoore.com/notes/rounding-in-javascript/
+    Dbug.prototype.round = function( value, decimals ) {
+        return Number(Math.round(value+'e'+decimals)+'e-'+decimals);
+    };
+    Dbug.prototype.performance = {
+        now: function(){
+            if ( window.performance !== undefined ) {
+                return window.performance.now();
+            }
+            else {
+                return new Date();
+            }
+        }
+    };
     Dbug.prototype.time = function( name, options ){
 
         // set defaults
@@ -21,11 +35,16 @@
             this.names[name].options.style = this.names[name].options.style || '';
             // "background-color: rgb(22, 147, 236); color: #fff; text-shadow: 1px 1px 3px #000; padding: 2px;"
             // create a new start time
-            this.names[name].start = new Date();
+            this.names[name].start = this.performance.now();
             return;
         };
 
-        var timeDiff = new Date() - this.names[name].start;
+        var timeDiff = this.performance.now() - this.names[name].start;
+
+        // round if using window.performance
+        if ( window.performance !== undefined ) {
+            timeDiff = this.round( timeDiff, 2 );
+        };
 
         // save the time in case we want it later
         this.names[name].occurrence.push(timeDiff);
