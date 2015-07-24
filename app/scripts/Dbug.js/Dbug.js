@@ -1,98 +1,82 @@
-// https://github.com/guillermoroblesjr/QueueRunner.js
+// https://github.com/guillermoroblesjr/Dbug.js
 (function(window, undefined){
-
-  var QueueRunner = function(){
-    'use strict';
-    this.queue = [
-      // { fn: function(){}, args: [], runOnComplete: false }
-    ];
+  'use strict';
+  var Dbug = function(){
+      this.names = {};
   };
 
   // subclass extends superclass
-  QueueRunner.prototype = Object.create( Object.prototype );
-  // set the constructor back to QueueRunner
-  QueueRunner.prototype.constructor = QueueRunner;
+  Dbug.prototype = Object.create( Object.prototype );
+  // set the constructor back to Dbug
+  Dbug.prototype.constructor = Dbug;
 
-  QueueRunner.VERSION = 'v0.0.4-alpha';
+  Dbug.VERSION = 'v0.3.0-alpha';
 
-  QueueRunner.prototype.ids = {
-    item: 0
+  // http://www.jacklmoore.com/notes/rounding-in-javascript/
+  Dbug.prototype.round = function( value, decimals ) {
+      return Number(Math.round(value+'e'+decimals)+'e-'+decimals);
   };
+  Dbug.prototype.performance = {
+      now: function(){
+          if ( window.performance !== undefined ) {
+              return window.performance.now();
+          }
+          else {
+              return new Date();
+          }
+      }
+  };
+  Dbug.prototype.time = function( name, options ){
 
-  var MakeQueueItem = QueueRunner.prototype.MakeQueueItem = function( itemOptions ){
-    this.fn = itemOptions.fn || function(){ 
-      return console.error('All queue item objects created with makeQueueItem(), need a function for the "fn" key!', 
-        '\n',
-        'The current instance running is: ', this,
-        '\n',
-        'Arguments passed in are: ', arguments
-      );
-    };
-    this.args = itemOptions.args || [];
-    this.runOnComplete = itemOptions.runOnComplete || false;
-    this.waitForEndOfStack = itemOptions.waitForEndOfStack || false;
-    this.timeDelay = itemOptions.timeDelay || undefined;
-    
-    this._id = this.generateId('item');
-    return this;
-  };
-  MakeQueueItem.prototype = Object.create( QueueRunner.prototype );
-  MakeQueueItem.prototype.constructor = MakeQueueItem;
+      // set defaults
+      options = options || {};
+      var print = options.print || (name + ':');
 
-  var generateId = QueueRunner.prototype.generateId = function( type ){
-    var id = ++this.ids[type];
-    return id;
-  };
-  generateId.prototype = Object.create( QueueRunner.prototype );
-  generateId.prototype.constructor = generateId;
+      // if the name object does not exist...
+      if ( this.names[name] === undefined ) {
+          // set the defaults
+          this.names[name] = {
+              start: null,
+              occurrence: []
+          };
+          this.names[name].options = options;
+          this.names[name].options.style = this.names[name].options.style || '';
+          // "background-color: rgb(22, 147, 236); color: #fff; text-shadow: 1px 1px 3px #000; padding: 2px;"
+          // create a new start time
+          this.names[name].start = this.performance.now();
+          return;
+      };
 
-  QueueRunner.prototype.waitAndDelay = function( item ){
-    var self = this;
-    var runItemFn = function( args ){
-      item.fn.apply( self, item.args );
-    };
-    return this.delay( runItemFn, item.timeDelay, item.args );
-  };
-  QueueRunner.prototype.run = function(){
-    var self = this;
-    // stop if the queue is zero
-    if ( this.queue.length === 0 ) { 
-      // console.log('the queue length is: ', this.queue.length);
-      return; 
-    };
-    // remove the first item in the queue
-    var item = this.queue.shift();
-    
-    if ( item.waitForEndOfStack === true && item.timeDelay !== undefined ) {
-      // run function at end of stack and after a time delay
-      this.waitAndDelay( item );
-    }
-    else if ( item.waitForEndOfStack === true ){
-      // run function at end of stack
-      this.delay( item.fn, 1, item.args );
-    }
-    else if ( item.timeDelay !== undefined ){
-      // run function at end of timeDelay
-      this.delay( item.fn, item.timeDelay, item.args );
-    }
-    else {
-      // run the function
-      item.fn.apply( this, item.args );
-    }
-    // continue running on queue if user requested
-    if ( item.runOnComplete === true ) {
-      this.run();
-    };
-  };
-  QueueRunner.prototype.continueQueue = QueueRunner.prototype.run;
-  QueueRunner.prototype.delay = function( func, wait, args ){
-    var self = this;
-    return setTimeout(function() { func.apply(self, args); }, wait);
+      var timeDiff = this.performance.now() - this.names[name].start;
+
+      // round if using window.performance
+      if ( window.performance !== undefined ) {
+          timeDiff = this.round( timeDiff, 2 );
+      };
+
+      // save the time in case we want it later
+      this.names[name].occurrence.push(timeDiff);
+
+      // if no options are used using the options
+      if ( this.names[name].options.style === undefined
+           || this.names[name].options.style.length < 6 ) {
+          // display the time difference
+          console.log( print, timeDiff, 'ms' );
+          return;
+      };
+      // if options are used
+      if ( this.names[name].options.style !== undefined
+           && typeof this.names[name].options.style === 'string' ) {
+          console.log( "%c" + print, 
+                       this.names[name].options.style, 
+                       timeDiff, 
+                       'ms'
+          );
+      };
   };
 
   // attach to the window
-  window.QueueRunner = QueueRunner;
+  window.Dbug = Dbug;
+  return Dbug;
 
-  return QueueRunner;
-
-})(window);
+})(window || {});
