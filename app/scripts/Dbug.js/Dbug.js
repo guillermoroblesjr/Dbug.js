@@ -1,8 +1,15 @@
 // https://github.com/guillermoroblesjr/Dbug.js
 (function(window, undefined){
   'use strict';
-  var Dbug = function(){
-      this.names = {};
+
+  var root = window;
+  var oldDbug = window.Dbug;
+
+  var Dbug = function( options ){
+    // this.options = options || {
+    //   cancel: false
+    // };
+    this.names = {};
   };
 
   // subclass extends superclass
@@ -11,6 +18,17 @@
   Dbug.prototype.constructor = Dbug;
 
   Dbug.VERSION = 'v0.3.0-alpha';
+
+  Dbug.prototype.options = {
+    cancel: false
+  };
+
+  // Reverts the 'Dbug' variable to its previous value and returns a reference to
+  // the 'Dbug' function.
+  Dbug.noConflict = function(){
+    root.Dbug = oldDbug;
+    return this;
+  };
 
   // http://www.jacklmoore.com/notes/rounding-in-javascript/
   Dbug.prototype.round = function( value, decimals ) {
@@ -28,51 +46,57 @@
   };
   Dbug.prototype.time = function( name, options ){
 
-      // set defaults
-      options = options || {};
-      var print = options.print || (name + ':');
+    // allow the user to cancel debugging time without haveing to remove
+    // their Dbug.time() calls
+    if ( this.options.cancel === true ) {
+      return 'canceled';
+    };
 
-      // if the name object does not exist...
-      if ( this.names[name] === undefined ) {
-          // set the defaults
-          this.names[name] = {
-              start: null,
-              occurrence: []
-          };
-          this.names[name].options = options;
-          this.names[name].options.style = this.names[name].options.style || '';
-          // "background-color: rgb(22, 147, 236); color: #fff; text-shadow: 1px 1px 3px #000; padding: 2px;"
-          // create a new start time
-          this.names[name].start = this.performance.now();
-          return;
-      };
+    // set defaults
+    options = options || {};
+    var print = options.print || (name + ':');
 
-      var timeDiff = this.performance.now() - this.names[name].start;
+    // if the name object does not exist...
+    if ( this.names[name] === undefined ) {
+        // set the defaults
+        this.names[name] = {
+            start: null,
+            occurrence: []
+        };
+        this.names[name].options = options;
+        this.names[name].options.style = this.names[name].options.style || '';
+        // "background-color: rgb(22, 147, 236); color: #fff; text-shadow: 1px 1px 3px #000; padding: 2px;"
+        // create a new start time
+        this.names[name].start = this.performance.now();
+        return;
+    };
 
-      // round if using window.performance
-      if ( window.performance !== undefined ) {
-          timeDiff = this.round( timeDiff, 2 );
-      };
+    var timeDiff = this.performance.now() - this.names[name].start;
 
-      // save the time in case we want it later
-      this.names[name].occurrence.push(timeDiff);
+    // round if using window.performance
+    if ( window.performance !== undefined ) {
+        timeDiff = this.round( timeDiff, 2 );
+    };
 
-      // if no options are used using the options
-      if ( this.names[name].options.style === undefined
-           || this.names[name].options.style.length < 6 ) {
-          // display the time difference
-          console.log( print, timeDiff, 'ms' );
-          return;
-      };
-      // if options are used
-      if ( this.names[name].options.style !== undefined
-           && typeof this.names[name].options.style === 'string' ) {
-          console.log( "%c" + print, 
-                       this.names[name].options.style, 
-                       timeDiff, 
-                       'ms'
-          );
-      };
+    // save the time in case we want it later
+    this.names[name].occurrence.push(timeDiff);
+
+    // if no options are used using the options
+    if ( this.names[name].options.style === undefined
+         || this.names[name].options.style.length < 6 ) {
+        // display the time difference
+        console.log( print, timeDiff, 'ms' );
+        return;
+    };
+    // if options are used
+    if ( this.names[name].options.style !== undefined
+         && typeof this.names[name].options.style === 'string' ) {
+        console.log( "%c" + print, 
+                     this.names[name].options.style, 
+                     timeDiff, 
+                     'ms'
+        );
+    };
   };
 
   // attach to the window
